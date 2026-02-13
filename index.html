@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Para Ti ❤️</title>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&family=Poppins:wght@300;500&display=swap');
+
+    :root{
+      --bg1:#ffe6e9;
+      --bg2:#ffc0cb;
+      --ink:#5a3e3e;
+      --accent:#d63384;
+      --timer:#c2185b;
+      --glass: rgba(255,255,255,.62);
+      --glass2: rgba(255,255,255,.86);
+      --shadow: 0 10px 25px rgba(0,0,0,.12);
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: linear-gradient(to bottom, var(--bg1), var(--bg2));
+      font-family: 'Poppins', sans-serif;
+    }
+
+    .bg-glow{
+      position: fixed;
+      inset: -25%;
+      background:
+        radial-gradient(850px 520px at 50% 28%, rgba(255, 50, 130, .28), transparent 62%),
+        radial-gradient(620px 420px at 22% 78%, rgba(255, 120, 170, .22), transparent 60%),
+        radial-gradient(760px 520px at 82% 78%, rgba(255, 70, 150, .18), transparent 60%);
+      filter: blur(22px);
+      pointer-events:none;
+      z-index: 0;
+      animation: drift 10s ease-in-out infinite alternate;
+    }
+    @keyframes drift{
+      from{ transform: translate3d(-1.5%, -1.2%, 0) scale(1.02); }
+      to{ transform: translate3d( 1.2%,  1.0%, 0) scale(1.04); }
+    }
+
+    /* FIX: El canvas debe ser fijo para no depender del flujo del contenedor */
+    #canvas {
+      display: block;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+    }
+
+    .container {
+      position: absolute;
+      top: calc(env(safe-area-inset-top, 0px) + clamp(12px, 3.6vh, 32px));
+      left: 50%;
+      transform: translateX(-50%);
+      text-align: center;
+      width: min(92vw, 720px);
+      z-index: 10;
+      color: var(--ink);
+      pointer-events: none;
+    }
+
+    h1 {
+      font-family: 'Dancing Script', cursive;
+      font-size: clamp(2.0rem, 6vw, 3.0rem);
+      color: var(--accent);
+      margin: 0 0 10px 0;
+      text-shadow:
+        0 10px 30px rgba(255, 40, 120, .18),
+        2px 2px 4px rgba(255, 255, 255, 0.9);
+      opacity: 0;
+      animation: fadeIn 1.2s ease-in forwards;
+    }
+
+    .message {
+      font-size: clamp(0.98rem, 3.6vw, 1.15rem);
+      margin: 10px auto;
+      background: var(--glass);
+      padding: 10px 14px;
+      border-radius: 16px;
+      display: inline-block;
+      box-shadow:
+        0 6px 18px rgba(255,192,203, 0.42),
+        0 10px 28px rgba(255, 60, 130, 0.08);
+      opacity: 0;
+      animation: fadeIn 1.2s ease-in 0.55s forwards;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,.55);
+    }
+
+    .timer {
+      font-size: clamp(1.0rem, 3.8vw, 1.25rem);
+      font-weight: 800;
+      color: var(--timer);
+      margin-top: 12px;
+      background: var(--glass2);
+      padding: 10px 18px;
+      border-radius: 999px;
+      display: inline-block;
+      box-shadow:
+        0 10px 18px rgba(0,0,0,0.08),
+        0 0 30px rgba(255, 60, 130, .12);
+      opacity: 0;
+      animation: fadeIn 1.2s ease-in 1.05s forwards;
+      border: 1px solid rgba(255,255,255,.6);
+    }
+
+    @keyframes fadeIn { to { opacity: 1; } }
+
+    .heart-icon {
+      color: #e91e63;
+      font-size: 1.5rem;
+      display:inline-block;
+      animation: pulse 1s infinite;
+      filter: drop-shadow(0 10px 18px rgba(233,30,99,.22));
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.18); }
+      100% { transform: scale(1); }
+    }
+
+    .overlay{
+      position: fixed;
+      inset: 0;
+      z-index: 30;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding: 18px;
+      background: radial-gradient(1200px 700px at 50% 40%, rgba(255,255,255,.45), rgba(255,192,203,.35));
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+    .start-card{
+      width: min(92vw, 520px);
+      background: rgba(255,255,255,.72);
+      border: 1px solid rgba(255,255,255,.65);
+      border-radius: 22px;
+      padding: 18px 16px;
+      text-align:center;
+      box-shadow: 0 20px 60px rgba(0,0,0,.14);
+    }
+    .start-title{
+      font-family: 'Dancing Script', cursive;
+      font-size: clamp(2.2rem, 7vw, 3.0rem);
+      color: var(--accent);
+      margin: 6px 0 8px;
+      text-shadow: 2px 2px 5px rgba(255,255,255,.85);
+    }
+    .start-sub{
+      color: rgba(90,62,62,.9);
+      font-size: clamp(0.98rem, 3.8vw, 1.1rem);
+      margin: 0 0 14px;
+    }
+    .start-btn{
+      pointer-events:auto;
+      font-size: 1.05rem;
+      padding: 12px 16px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, rgba(255,60,130,.95), rgba(255,140,180,.95));
+      color: white;
+      box-shadow: 0 18px 40px rgba(255,60,130,.25);
+      border: none;
+      cursor: pointer;
+    }
+    .start-btn:hover{ filter: brightness(1.03); }
+    .start-note{
+      margin-top: 10px;
+      font-size: .88rem;
+      color: rgba(90,62,62,.75);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="bg-glow"></div>
+
+  <div id="overlay" class="overlay">
+    <div class="start-card">
+      <div class="start-title">Ari ❤️</div>
+      <div class="start-sub">Tocá el botón</div>
+      <button id="start" class="start-btn">Empezar ✨</button>
+      <div class="start-note">De tu Bomboncito.</div>
+    </div>
+  </div>
+
+  <div class="container" id="content" style="opacity:0;">
+    <h1>Para mi Amorcito Ari:</h1>
+
+    <div class="message">
+      Que lindo es coincidir con vos. <br> Me encanta absolutamente todo de vos, y en todas las formas.<br> Agradezco a la vida habernos cruzado.
+      <span class="heart-icon">❤️</span>
+    </div>
+
+    <br>
+
+    <div class="message">
+      Esta hermosa intensidad lleva...
+    </div>
+
+    <div id="timer" class="timer">
+      Calculando tiempo...
+    </div>
+  </div> <canvas id="canvas"></canvas>
+
+  <script>
+    // =========================
+    // CONFIGURACIÓN
+    // =========================
+    // Ajusta la fecha aquí (Año, Mes-1, Día)
+    // Enero = 0, Febrero = 1, etc.
+    const startDate = new Date(2026, 1, 2, 0, 0, 0);
+
+    const TREE_X_FACTOR = 0.50; // 0.50 = Centro exacto
+    const TREE_BASE_Y_FACTOR = 0.92;
+
+    const LEAF_START = 0.34;
+    const LEAF_GROW_SPEED = 1.05;
+
+    const EXTRA_SIDE_LEAVES_BASE = 160;
+    const SIDE_SPREAD_X_BASE = 210;
+    const SIDE_SPREAD_Y_BASE = 120;
+    const SIDE_BIAS_Y = 0.46;
+
+    const WIND = 10;
+    const LOVE_BURST_EXTRA = 1.25;
+
+    // =========================
+    // CONTADOR
+    // =========================
+    function pad2(n){ return String(n).padStart(2,'0'); }
+    function updateTimer() {
+      const now = new Date();
+      const diff = now - startDate;
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+      const minutes = Math.floor((diff / (1000 * 60)) % 60);
+      const seconds = Math.floor((diff / 1000) % 60);
+      document.getElementById("timer").innerText =
+        `${days} días ${pad2(hours)}h ${pad2(minutes)}m ${pad2(seconds)}s`;
+    }
+    setInterval(updateTimer, 1000);
+    updateTimer();
+
+    // =========================
+    // CANVAS
+    // =========================
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    let W = 0, H = 0, DPR = 1;
+
+    function resizeCanvas(){
+      // Forzamos el tamaño al de la ventana visual
+      W = window.innerWidth;
+      H = window.innerHeight;
+      DPR = Math.min(2, window.devicePixelRatio || 1);
+
+      canvas.width = Math.floor(W * DPR);
+      canvas.height = Math.floor(H * DPR);
+      canvas.style.width = W + "px";
+      canvas.style.height = H + "px";
+
+      // Reseteamos cualquier transformación previa
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.scale(DPR, DPR);
+    }
+
+    // Inicializar
+    resizeCanvas();
+
+    window.addEventListener("resize", () => {
+      resizeCanvas();
+      resetScene();
+    });
+
+    // =========================
+    // UTILIDADES
+    // =========================
+    const heartColors = ["#ff4d6d", "#c9184a", "#ff758f", "#ff8fa3", "#e91e63", "#ff2d6f"];
+    function rand(min,max){ return min + Math.random()*(max-min); }
+    function clamp01(x){ return Math.max(0, Math.min(1, x)); }
+    function easeOutCubic(x){ return 1 - Math.pow(1-x, 3); }
+    function easeInOutQuad(x){ return x < 0.5 ? 2*x*x : 1 - Math.pow(-2*x+2,2)/2; }
+
+    function responsiveScale(){
+      const s = 0.72 + (W - 320) * (0.30 / 580);
+      return Math.max(0.72, Math.min(1.0, s));
+    }
+
+    function drawHeart(x, y, size, color, alpha=1){
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      // Ajuste visual para que el corazón cuelgue mejor del punto x,y
+      ctx.moveTo(x, y);
+      ctx.bezierCurveTo(x - size/2, y - size/2, x - size, y + size/3, x, y + size);
+      ctx.bezierCurveTo(x + size, y + size/3, x + size/2, y - size/2, x, y);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    // =========================
+    // LÓGICA DEL ÁRBOL
+    // =========================
+    let segments = [];
+    let leaves = [];
+    let fallingHearts = [];
+    let petals = [];
+    let growT = 0;
+    let bloomed = false;
+    let bloomParticles = [];
+
+    function buildTree(){
+      segments = [];
+      leaves = [];
+
+      const s = responsiveScale();
+      const baseX = W * TREE_X_FACTOR;
+      const baseY = H * TREE_BASE_Y_FACTOR;
+      const trunkLen = (Math.max(92, Math.min(170, H*0.205))) * s;
+      const trunkW   = Math.max(8, Math.min(16, W*0.020)) * s;
+
+      // Tronco inicial
+      segments.push({x: baseX, y: baseY, len: trunkLen, angleDeg: -90, width: trunkW, depth: 0});
+
+      const firstX = baseX;
+      const firstY = baseY - trunkLen;
+
+      function genFrom(x,y,len,angleDeg,width,depth){
+        segments.push({x, y, len, angleDeg, width, depth});
+        if(depth > 10) return;
+
+        const endX = x + Math.cos(angleDeg*Math.PI/180) * len;
+        const endY = y + Math.sin(angleDeg*Math.PI/180) * len;
+
+        if(len < 13 * s){
+          leaves.push({
+            x: endX,
+            y: endY,
+            size: rand(9, 18) * s,
+            color: heartColors[(Math.random()*heartColors.length)|0],
+            alpha: rand(0.72, 1),
+            rank: endY
+          });
+          return;
+        }
+
+        const nextLen = len * rand(0.68, 0.79);
+        const nextW = width * 0.72;
+        // Simetría estructural
+        const spread = rand(18, 30);
+
+        genFrom(endX, endY, nextLen, angleDeg + spread, nextW, depth+1);
+        genFrom(endX, endY, nextLen, angleDeg - spread, nextW, depth+1);
+      }
+
+      // Brazos principales
+      genFrom(firstX, firstY, trunkLen*0.60, -55,  trunkW*0.70, 1);
+      genFrom(firstX, firstY, trunkLen*0.60, -125, trunkW*0.70, 1);
+
+      // Hojitas flotantes (copa)
+      const crownX = W * TREE_X_FACTOR;
+      const crownY = H * SIDE_BIAS_Y;
+      const extraLeaves = Math.floor(EXTRA_SIDE_LEAVES_BASE * (0.85 + 0.25*s));
+      const spreadX = SIDE_SPREAD_X_BASE * s;
+      const spreadY = SIDE_SPREAD_Y_BASE * s;
+
+      for(let i=0;i<extraLeaves;i++){
+        const side = Math.random() < 0.5 ? -1 : 1;
+        const x = crownX + side * (spreadX * rand(0.62, 1.04)) + rand(-18, 18);
+        const y = crownY + rand(-spreadY, spreadY) + rand(-18, 18);
+        if(y > H*0.78) continue;
+
+        leaves.push({
+          x, y,
+          size: rand(8, 16) * s,
+          color: heartColors[(Math.random()*heartColors.length)|0],
+          alpha: rand(0.55, 0.95),
+          rank: y
+        });
+      }
+    }
+
+    function spawnFallingHearts(){
+      fallingHearts = [];
+      const count = Math.floor(Math.min(46, Math.max(20, W/34)));
+      for(let i=0;i<count;i++){
+        fallingHearts.push({
+          x: rand(W*0.08, W*0.92),
+          y: rand(-H, 0),
+          vy: rand(35, 140),
+          vx: rand(-12, 12),
+          size: rand(7, 14),
+          alpha: rand(0.14, 0.52),
+          color: heartColors[(Math.random()*heartColors.length)|0],
+          sway: rand(0.8, 1.8),
+          t: rand(0, 10)
+        });
+      }
+    }
+
+    function spawnPetals(){
+      petals = [];
+      const count = Math.floor(Math.min(40, Math.max(16, W/45)));
+      for(let i=0;i<count;i++){
+        petals.push({
+          x: rand(0, W),
+          y: rand(-H, 0),
+          vy: rand(18, 55),
+          vx: rand(-10, 10),
+          r: rand(2.2, 4.6),
+          a: rand(0.12, 0.28),
+          t: rand(0, 10)
+        });
+      }
+    }
+
+    function emitBloom(cx, cy){
+      bloomParticles = [];
+      const n = Math.floor(Math.min(180, Math.max(90, W/7)));
+      for(let i=0;i<n;i++){
+        bloomParticles.push({
+          x: cx + rand(-25,25),
+          y: cy + rand(-20,20),
+          vx: rand(-95,95),
+          vy: rand(-210,-70),
+          g: rand(210, 330),
+          life: rand(1.0, 2.0),
+          age: 0,
+          size: rand(10, 18) * LOVE_BURST_EXTRA,
+          alpha: rand(0.65, 1.0),
+          color: heartColors[(Math.random()*heartColors.length)|0],
+        });
+      }
+    }
+    function updateBloom(dt){
+      for(const p of bloomParticles){
+        p.age += dt;
+        p.vy += p.g * dt;
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+        p.alpha *= 0.992;
+      }
+      bloomParticles = bloomParticles.filter(p => p.age < p.life && p.alpha > 0.05);
+    }
+    function drawBloom(){
+      if(!bloomParticles.length) return;
+      ctx.save();
+      ctx.shadowColor = "rgba(255, 70, 140, .45)";
+      ctx.shadowBlur = 22;
+      for(const p of bloomParticles){
+        drawHeart(p.x, p.y, p.size, p.color, p.alpha);
+      }
+      ctx.restore();
+    }
+
+    function resetScene(){
+      growT = 0;
+      bloomed = false;
+      bloomParticles = [];
+      buildTree();
+      spawnFallingHearts();
+      spawnPetals();
+    }
+
+    function drawGround(){
+      ctx.save();
+      ctx.strokeStyle = "rgba(90,62,62,0.30)";
+      ctx.lineWidth = 2;
+      const y = H*0.92;
+      ctx.beginPath();
+      ctx.moveTo(W*0.06, y);
+      ctx.lineTo(W*0.94, y);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawSoftVignette(){
+      ctx.save();
+      const g = ctx.createRadialGradient(W*0.5, H*0.45, Math.min(W,H)*0.15, W*0.5, H*0.55, Math.max(W,H)*0.72);
+      g.addColorStop(0, "rgba(255,255,255,0)");
+      g.addColorStop(1, "rgba(120,70,80,0.08)");
+      ctx.fillStyle = g;
+      ctx.fillRect(0,0,W,H);
+      ctx.restore();
+    }
+
+    function drawTree(progress){
+      const showCount = Math.floor(segments.length * easeOutCubic(progress));
+
+      ctx.save();
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.strokeStyle = "#4b3a3a";
+      for(let i=0;i<showCount;i++){
+        const s = segments[i];
+        if(s.x == null || s.y == null) continue;
+        const ang = s.angleDeg * Math.PI/180;
+        const x2 = s.x + Math.cos(ang) * s.len;
+        const y2 = s.y + Math.sin(ang) * s.len;
+        ctx.lineWidth = Math.max(1.2, s.width);
+        ctx.beginPath();
+        ctx.moveTo(s.x, s.y);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+      }
+      ctx.restore();
+
+      const leafRaw = (progress - LEAF_START) / Math.max(0.0001, (1 - LEAF_START));
+      const leafProgress = easeInOutQuad(clamp01(leafRaw)) * LEAF_GROW_SPEED;
+      const leafCount = Math.floor(leaves.length * clamp01(leafProgress));
+
+      if(leafCount > 10){
+        ctx.save();
+        ctx.shadowColor = "rgba(255, 60, 130, .42)";
+        ctx.shadowBlur = 18;
+        for(let i=0;i<leafCount;i++){
+          const l = leaves[i];
+          const local = i / Math.max(1, leafCount);
+          const a = l.alpha * (0.45 + 0.55 * local);
+          drawHeart(l.x, l.y, l.size, l.color, a);
+        }
+        ctx.restore();
+      } else {
+        for(let i=0;i<leafCount;i++){
+          const l = leaves[i];
+          drawHeart(l.x, l.y, l.size, l.color, l.alpha);
+        }
+      }
+    }
+
+    function updateFalling(dt){
+      for(const p of fallingHearts){
+        p.t += dt * p.sway;
+        p.y += p.vy * dt;
+        p.x += (p.vx + Math.sin(p.t)*10 + WIND*0.15) * dt;
+        if(p.y > H + 30){
+          p.y = rand(-160, -30);
+          p.x = rand(W*0.05, W*0.95);
+          p.vy = rand(35, 140);
+        }
+      }
+    }
+    function drawFalling(){
+      ctx.save();
+      ctx.shadowColor = "rgba(255, 60, 130, .18)";
+      ctx.shadowBlur = 10;
+      for(const p of fallingHearts){
+        drawHeart(p.x, p.y, p.size, p.color, p.alpha);
+      }
+      ctx.restore();
+    }
+
+    function updatePetals(dt){
+      for(const p of petals){
+        p.t += dt;
+        p.y += p.vy * dt;
+        p.x += (p.vx + Math.sin(p.t*1.4)*6 + WIND*0.08) * dt;
+        if(p.y > H + 10){
+          p.y = rand(-120, -20);
+          p.x = rand(0, W);
+        }
+      }
+    }
+    function drawPetals(){
+      ctx.save();
+      ctx.fillStyle = "rgba(255,255,255,.18)";
+      for(const p of petals){
+        ctx.globalAlpha = p.a;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    // =========================
+    // LOOP
+    // =========================
+    let last = performance.now();
+    let running = false;
+    let rafId = null;
+
+    function animate(now){
+      if(!running) return;
+
+      const dt = Math.min(0.033, (now - last)/1000);
+      last = now;
+
+      ctx.clearRect(0,0,W,H);
+
+      growT = Math.min(1, growT + dt * 0.18);
+
+      updatePetals(dt);
+      drawPetals();
+
+      updateFalling(dt);
+      drawFalling();
+
+      drawTree(growT);
+      drawGround();
+
+      const crownX = W * TREE_X_FACTOR;
+      const crownY = H * 0.46;
+      if(!bloomed && growT >= 0.985){
+        bloomed = true;
+        emitBloom(crownX, crownY);
+      }
+      updateBloom(dt);
+      drawBloom();
+
+      drawSoftVignette();
+
+      rafId = requestAnimationFrame(animate);
+    }
+
+    function startShow(){
+      resetScene();
+      last = performance.now();
+      running = true;
+      cancelAnimationFrame(rafId);
+
+      const content = document.getElementById("content");
+      content.style.transition = "opacity 600ms ease";
+      content.style.opacity = "1";
+
+      rafId = requestAnimationFrame(animate);
+    }
+
+    document.getElementById("start").addEventListener("click", () => {
+      const overlay = document.getElementById("overlay");
+      overlay.style.transition = "opacity 450ms ease";
+      overlay.style.opacity = "0";
+      setTimeout(() => overlay.style.display = "none", 460);
+      startShow();
+    }, { passive: true });
+
+    // Dibujo idle (antes del click)
+    (function drawIdle(){
+      ctx.clearRect(0,0,W,H);
+      for(let i=0;i<16;i++){
+        drawHeart(rand(W*0.08, W*0.92), rand(H*0.06, H*0.86), rand(7,13),
+                  heartColors[(Math.random()*heartColors.length)|0], rand(0.08,0.16));
+      }
+      drawGround();
+    })();
+  </script>
+</body>
+</html>
