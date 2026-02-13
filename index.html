@@ -644,6 +644,10 @@
       overlay.style.transition = "opacity 450ms ease";
       overlay.style.opacity = "0";
       setTimeout(() => overlay.style.display = "none", 460);
+      const music = document.getElementById("bg-music");
+      music.volume = 0.6; // volumen suave
+      music.play();
+
       startShow();
     }, { passive: true });
 
@@ -657,8 +661,8 @@
       drawGround();
     })();
   </script>
-  <audio id="bg-music" autoplay loop>
-    <source src="musica.mp3" type="audio/mpeg">
-  </audio>
+    <audio id="bg-music" loop>
+      <source src="musica.mp3" type="audio/mpeg">
+    </audio>
 </body>
 </html>
